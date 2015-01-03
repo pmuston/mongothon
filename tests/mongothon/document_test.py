@@ -7,89 +7,89 @@ class TestDocument(unittest.TestCase):
 
     def test_equals_dict(self):
         doc = Document({'a': 'b', 'c': 'd'})
-        self.assertEquals(doc, {'a': 'b', 'c': 'd'})
+        self.assertEqual(doc, {'a': 'b', 'c': 'd'})
 
     def test_init_without_initial(self):
         doc = Document()
-        self.assertEquals({}, doc)
+        self.assertEqual({}, doc)
 
     def test_set_get(self):
         doc = Document({'a': 'b'})
-        self.assertEquals('b', doc['a'])
+        self.assertEqual('b', doc['a'])
         doc['a'] = 'c'
-        self.assertEquals('c', doc['a'])
+        self.assertEqual('c', doc['a'])
 
     def test_update(self):
         doc = Document()
         doc.update({'a': 'b', 'c': 'd'})
-        self.assertEquals({'a': 'b', 'c': 'd'}, doc)
+        self.assertEqual({'a': 'b', 'c': 'd'}, doc)
 
     def test_setdefault(self):
         doc = Document({'a': 'b'})
-        self.assertEquals(doc.setdefault('c', {'d': 'e'}), {'d': 'e'})
+        self.assertEqual(doc.setdefault('c', {'d': 'e'}), {'d': 'e'})
         self.assertIsInstance(doc['c'], Document)
 
     def test_init_with_nested_dict(self):
         doc = Document({'a': {'b': 'c'}})
-        self.assertEquals({'a': {'b': 'c'}}, doc)
+        self.assertEqual({'a': {'b': 'c'}}, doc)
         self.assertIsInstance(doc['a'], Document)
-        self.assertEquals(doc['a']['b'], 'c')
+        self.assertEqual(doc['a']['b'], 'c')
 
     def test_copies_initial_dict(self):
         spec = {'a': {'b': 'c'}}
         doc = Document(spec)
         spec['d'] = 'e'
-        self.assertEquals({'a': {'b': 'c'}}, doc)
+        self.assertEqual({'a': {'b': 'c'}}, doc)
 
     def test_set_dict_as_item(self):
         doc = Document()
         doc['a'] = {'b': 'c'}
-        self.assertEquals({'a': {'b': 'c'}}, doc)
+        self.assertEqual({'a': {'b': 'c'}}, doc)
         self.assertIsInstance(doc['a'], Document)
-        self.assertEquals(doc['a']['b'], 'c')
+        self.assertEqual(doc['a']['b'], 'c')
 
     def test_init_with_nested_list_and_dict(self):
         doc = Document({'a': [{'b': 'c'}]})
-        self.assertEquals({'a': [{'b': 'c'}]}, doc)
+        self.assertEqual({'a': [{'b': 'c'}]}, doc)
         self.assertIsInstance(doc['a'], DocumentList)
         self.assertIsInstance(doc['a'][0], Document)
-        self.assertEquals(doc['a'][0]['b'], 'c')
+        self.assertEqual(doc['a'][0]['b'], 'c')
 
     def test_append_dict_to_list(self):
         doc = Document({'a': []})
         doc['a'].append({'b': 'c'})
-        self.assertEquals({'a': [{'b': 'c'}]}, doc)
+        self.assertEqual({'a': [{'b': 'c'}]}, doc)
         self.assertIsInstance(doc['a'][0], Document)
-        self.assertEquals(doc['a'][0]['b'], 'c')
+        self.assertEqual(doc['a'][0]['b'], 'c')
 
     def test_delete_from_document(self):
         doc = Document({'a': 'b', 'c': 'd'})
         del doc['c']
-        self.assertEquals(doc, {'a': 'b'})
+        self.assertEqual(doc, {'a': 'b'})
 
     def test_delete_from_document_list(self):
         doc = Document({'a': [{'b': 'c'}]})
         del doc['a'][0]
-        self.assertEquals(doc, {'a': []})
+        self.assertEqual(doc, {'a': []})
 
     def test_extend_doc_list(self):
         doc = Document({'a': [{'b': 'c'}]})
         doc['a'].extend([{'d': 'e'}, {'f': 'g'}])
-        self.assertEquals(doc, {'a': [{'b': 'c'}, {'d': 'e'}, {'f': 'g'}]})
+        self.assertEqual(doc, {'a': [{'b': 'c'}, {'d': 'e'}, {'f': 'g'}]})
         self.assertIsInstance(doc['a'][1], Document)
         self.assertIsInstance(doc['a'][2], Document)
 
     def test_doc_list_slice_assignment(self):
         doc = Document({'a': [{'b': 'c'}]})
         doc['a'][1:2] = [{'d': 'e'}, {'f': 'g'}]
-        self.assertEquals(doc, {'a': [{'b': 'c'}, {'d': 'e'}, {'f': 'g'}]})
+        self.assertEqual(doc, {'a': [{'b': 'c'}, {'d': 'e'}, {'f': 'g'}]})
         self.assertIsInstance(doc['a'][1], Document)
         self.assertIsInstance(doc['a'][2], Document)
 
     def test_doc_list_insert(self):
         doc = Document({'a': [{'b': 'c'}, {'d': 'e'}]})
         doc['a'].insert(1, {'f': 'g'})
-        self.assertEquals(doc, {'a': [{'b': 'c'}, {'f': 'g'}, {'d': 'e'}]})
+        self.assertEqual(doc, {'a': [{'b': 'c'}, {'f': 'g'}, {'d': 'e'}]})
         self.assertIsInstance(doc['a'][1], Document)
 
     def test_changed(self):
@@ -215,9 +215,9 @@ class TestDocument(unittest.TestCase):
         self.assertTrue(doc.changed)
         self.assertTrue(doc['e'][0].changed)
         doc.reset_all_changes()
-        self.assertEquals({}, doc.changed)
-        self.assertEquals({}, doc['e'][0].changed)
-        self.assertEquals({}, doc.deleted)
+        self.assertEqual({}, doc.changed)
+        self.assertEqual({}, doc['e'][0].changed)
+        self.assertEqual({}, doc.deleted)
 
     def test_pickleable(self):
         doc = Document({
@@ -229,7 +229,7 @@ class TestDocument(unittest.TestCase):
             ]
         })
         codeced = pickle.loads(pickle.dumps(doc))
-        self.assertEquals(doc, codeced)
+        self.assertEqual(doc, codeced)
         self.assertFalse(codeced.added)
         self.assertFalse(codeced.changed)
         self.assertFalse(codeced.deleted)
@@ -244,7 +244,7 @@ class TestDocument(unittest.TestCase):
             ]
         })
         output = doc.to_dict()
-        self.assertEquals(doc, output)
+        self.assertEqual(doc, output)
         self.assertIsInstance(output, dict)
         self.assertIsInstance(output['e'], list)
         self.assertIsInstance(output['e'][0], dict)
@@ -257,17 +257,17 @@ class TestDocument(unittest.TestCase):
 class TestDocumentList(unittest.TestCase):
     def test_equals_list(self):
         dlist = DocumentList(['a', 'b'])
-        self.assertEquals(['a', 'b'], dlist)
+        self.assertEqual(['a', 'b'], dlist)
 
     def test_set_item(self):
         dlist = DocumentList(['a', 'b'])
         dlist[1] = 'c'
-        self.assertEquals(['a', 'c'], dlist)
+        self.assertEqual(['a', 'c'], dlist)
 
     def test_set_slice(self):
         dlist = DocumentList(['a', 'b', 'c', 'd'])
         dlist[1:3] = ['e', 'f']
-        self.assertEquals(['a', 'e', 'f', 'd'], dlist)
+        self.assertEqual(['a', 'e', 'f', 'd'], dlist)
 
     def test_wraps_dicts_in_document(self):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
@@ -277,32 +277,32 @@ class TestDocumentList(unittest.TestCase):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
         dlist.extend([{'a': 'd'}, {'a': 'e'}])
         self.assertIsInstance(dlist[3], Document)
-        self.assertEquals(dlist, [{'a': 'b'}, {'a': 'c'}, {'a': 'd'}, {'a': 'e'}])
+        self.assertEqual(dlist, [{'a': 'b'}, {'a': 'c'}, {'a': 'd'}, {'a': 'e'}])
 
     def test_append(self):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
         dlist.append({'a': 'd'})
         self.assertIsInstance(dlist[2], Document)
-        self.assertEquals(dlist, [{'a': 'b'}, {'a': 'c'}, {'a': 'd'}])
+        self.assertEqual(dlist, [{'a': 'b'}, {'a': 'c'}, {'a': 'd'}])
 
     def test_insert(self):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
         dlist.insert(1, {'a': 'd'})
         self.assertIsInstance(dlist[1], Document)
-        self.assertEquals(dlist, [{'a': 'b'}, {'a': 'd'}, {'a': 'c'}])
+        self.assertEqual(dlist, [{'a': 'b'}, {'a': 'd'}, {'a': 'c'}])
 
     def test_remove(self):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
         dlist.remove({'a': 'b'})
-        self.assertEquals(dlist, [{'a': 'c'}])
+        self.assertEqual(dlist, [{'a': 'c'}])
 
     def test_pop(self):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
         dlist.pop()
-        self.assertEquals(dlist, [{'a': 'b'}])
+        self.assertEqual(dlist, [{'a': 'b'}])
 
     def test_pop_with_index(self):
         dlist = DocumentList([{'a': 'b'}, {'a': 'c'}])
         dlist.pop(0)
-        self.assertEquals(dlist, [{'a': 'c'}])
+        self.assertEqual(dlist, [{'a': 'c'}])
 

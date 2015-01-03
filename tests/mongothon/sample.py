@@ -11,32 +11,32 @@ def stubnow():
     return datetime(2012, 4, 5)
 
 name_schema = Schema({
-    "first":    {"type": basestring, "required": True},
-    "last":     {"type": basestring, "required": True}
+    "first":    {"type": str, "required": True},
+    "last":     {"type": str, "required": True}
 })
 
 # TEST SCHEMAS
 comment_schema = Schema({
     "commenter":    {"type": name_schema, "required": True},
-    "email":        {"type": basestring, "required": False},
-    "comment":      {"type": basestring, "required": True},
+    "email":        {"type": str, "required": False},
+    "comment":      {"type": str, "required": True},
     "votes":        {"type": int, "default": 0}
 })
 
 blog_post_schema = Schema({
     "author":           {"type": name_schema, "required": True},
     "content":          {"type": Schema({
-        "title":            {"type": basestring, "required": True},
-        "text":             {"type": basestring, "required": True},
+        "title":            {"type": str, "required": True},
+        "text":             {"type": str, "required": True},
         "page_views":       {"type": int, "default": 1}
     }), "required": True},
-    "category":         {"type": basestring, "validates":one_of("cooking", "politics")},
+    "category":         {"type": str, "validates":one_of("cooking", "politics")},
     "comments":         {"type": Array(comment_schema)},
     "likes":            {"type": int, "default": 0},
     "creation_date":    {"type": datetime, "default": stubnow},
-    "tags":             {"type": Array(basestring)},
-    "misc":             {"type": Mixed(basestring, int)},
-    "linked_id":        {"type": Mixed(int, basestring)},
+    "tags":             {"type": Array(str)},
+    "misc":             {"type": Mixed(str, int)},
+    "linked_id":        {"type": Mixed(int, str)},
     "publication_id":   {"type": ObjectId}
 })
 
@@ -80,37 +80,37 @@ def valid_doc(overrides=None):
 # including the use of Unicode and applied defaults.
 def expected_db_doc(object_id):
     return {
-        u"_id": object_id,
-        u"author": {
-            u"first":    u"John",
-            u"last":     u"Humphreys"
+        "_id": object_id,
+        "author": {
+            "first":    "John",
+            "last":     "Humphreys"
         },
-        u"content": {
-            u"title": u"How to make cookies",
-            u"text": u"First start by pre-heating the oven...",
-            u"page_views": 1
+        "content": {
+            "title": "How to make cookies",
+            "text": "First start by pre-heating the oven...",
+            "page_views": 1
         },
-        u"category": u"cooking",
-        u"comments": [
+        "category": "cooking",
+        "comments": [
             {
-                u"commenter": {
-                    u"first": u"Julio",
-                    u"last": u"Cesar"
+                "commenter": {
+                    "first": "Julio",
+                    "last": "Cesar"
                 },
-                u"email": u"jcesar@test.com",
-                u"comment": u"Great post dude!",
-                u"votes": 0
+                "email": "jcesar@test.com",
+                "comment": "Great post dude!",
+                "votes": 0
             },
             {
-                u"commenter": {
-                    u"first": u"Michael",
-                    u"last": u"Andrews"
+                "commenter": {
+                    "first": "Michael",
+                    "last": "Andrews"
                 },
-                u"comment": u"My wife loves these.",
-                u"votes": 0
+                "comment": "My wife loves these.",
+                "votes": 0
             }
         ],
-        u"likes": 0,
-        u"tags": [u"cookies", u"recipe", u"yum"],
-        u"creation_date": stubnow()
+        "likes": 0,
+        "tags": ["cookies", "recipe", "yum"],
+        "creation_date": stubnow()
     }

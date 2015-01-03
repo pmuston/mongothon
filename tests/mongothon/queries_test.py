@@ -29,8 +29,8 @@ class TestScopeBuilder(TestCase):
         bldr2 = bldr.sample_scope()
         self.assertIsInstance(bldr2, ScopeBuilder)
         self.assertNotEqual(bldr, bldr2)
-        self.assertEquals({}, bldr.query)
-        self.assertEquals({"thing": "blah"}, bldr2.query)
+        self.assertEqual({}, bldr.query)
+        self.assertEqual({"thing": "blah"}, bldr2.query)
 
 
     def test_scope_builder_with_projection_and_options(self):
@@ -43,9 +43,9 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [sample_scope]).sample_scope()
         self.assertIsInstance(bldr, ScopeBuilder)
-        self.assertEquals({"thing": "blah"}, bldr.query)
-        self.assertEquals({"thing": 1, "other": 1}, bldr.projection)
-        self.assertEquals({"limit": 5}, bldr.options)
+        self.assertEqual({"thing": "blah"}, bldr.query)
+        self.assertEqual({"thing": 1, "other": 1}, bldr.projection)
+        self.assertEqual({"limit": 5}, bldr.options)
 
 
     def test_chained_scope_query_building(self):
@@ -59,9 +59,9 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b])
         bldr = bldr.scope_a().scope_b()
-        self.assertEquals({"thing": "blah", "woo": "ha"},
+        self.assertEqual({"thing": "blah", "woo": "ha"},
                           bldr.query)
-        self.assertEquals({"ezy": "e"}, bldr.projection)
+        self.assertEqual({"ezy": "e"}, bldr.projection)
 
     def test_last_query_wins_in_chained_scopes(self):
         mock_model = Mock()
@@ -74,9 +74,9 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b])
         bldr = bldr.scope_a().scope_b()
-        self.assertEquals({"thing": "pish"},
+        self.assertEqual({"thing": "pish"},
                           bldr.query)
-        self.assertEquals({"limit": 10}, bldr.options)
+        self.assertEqual({"limit": 10}, bldr.options)
 
     def test_queries_are_deep_merged_with_chained_scopes(self):
         mock_model = Mock()
@@ -89,7 +89,7 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b])
         bldr = bldr.scope_a().scope_b()
-        self.assertEquals({"thing": {"$elemMatch": {'somefield': 1,
+        self.assertEqual({"thing": {"$elemMatch": {'somefield': 1,
                                                     'someotherfield': 10}}},
                           bldr.query)
 
@@ -104,7 +104,7 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b, where])
         bldr = bldr.scope_a().scope_b().where({'a': 'b'})
-        self.assertEquals({"thing": {"$elemMatch": {'somefield': 1,
+        self.assertEqual({"thing": {"$elemMatch": {'somefield': 1,
                                                     'someotherfield': 10}},
                            'a': 'b'},
                           bldr.query)
@@ -120,7 +120,7 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b])
         bldr = bldr.scope_a().scope_b()
-        self.assertEquals({"thing": {"$in": [1, 2, 3, 4, 5]}},
+        self.assertEqual({"thing": {"$in": [1, 2, 3, 4, 5]}},
                           bldr.query)
 
     def test_queries_with_lists_of_dicts_are_deep_merged_with_chained_scopes(self):
@@ -134,7 +134,7 @@ class TestScopeBuilder(TestCase):
 
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b])
         bldr = bldr.scope_a().scope_b()
-        self.assertEquals({"thing": {"$all": [{"$elemMatch": {"size": "M"}},
+        self.assertEqual({"thing": {"$all": [{"$elemMatch": {"size": "M"}},
                                               {"$elemMatch": {"num": 100}}]}},
                           bldr.query)
 
@@ -155,7 +155,7 @@ class TestScopeBuilder(TestCase):
             {"thing": "blah", "woo": "ha"},
             {"icecube": 1},
             sort=True)
-        self.assertEquals(cursor, results)
+        self.assertEqual(cursor, results)
 
     def test_iterate(self):
         mock_model = Mock()
@@ -171,8 +171,8 @@ class TestScopeBuilder(TestCase):
         bldr = ScopeBuilder(mock_model, [scope_a, scope_b])
         results = bldr.scope_a().scope_b()
         it = results.__iter__()
-        self.assertEqual({'_id': 1}, it.next())
-        self.assertEqual({'_id': 2}, it.next())
+        self.assertEqual({'_id': 1}, next(it))
+        self.assertEqual({'_id': 2}, next(it))
         mock_model.find.assert_called_once_with(
             {"thing": "blah", "woo": "ha"},
             None)

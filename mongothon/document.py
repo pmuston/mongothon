@@ -162,7 +162,7 @@ class Document(dict):
         DocumentLists.
         """
         self.reset_changes()
-        for value in self.values():
+        for value in list(self.values()):
             if isinstance(value, Document) or isinstance(value, DocumentList):
                 value.reset_all_changes()
 
@@ -222,7 +222,7 @@ class Document(dict):
         into child Documents and DocumentLists converting those to dicts
         and lists respectively.
         """
-        return {key: unwrap(value) for key, value in self.iteritems()}
+        return {key: unwrap(value) for key, value in self.items()}
 
 
 class DocumentList(list):

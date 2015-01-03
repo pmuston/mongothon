@@ -8,20 +8,21 @@ from mongothon.scopes import STANDARD_SCOPES
 from bson import ObjectId
 from copy import deepcopy
 from .fake import FakeCursor
+import collections
 
 car_schema = Schema({
-    "make":                 {"type": basestring, "required": True},
-    "model":                {"type": basestring, "required": True},
+    "make":                 {"type": str, "required": True},
+    "model":                {"type": str, "required": True},
     "trim":                 {"type": Schema({
         "ac":                   {"type": bool, "default": True},
         "doors":                {"type": int, "required": True, "default": 4}
     }), "required": True},
     "wheels":               {"type": Array(Schema({
-        "position":         {"type": basestring, "required": True, "validates": one_of('FR', 'FL', 'RR', 'RL')},
-        "tire":             {"type": basestring},
+        "position":         {"type": str, "required": True, "validates": one_of('FR', 'FL', 'RR', 'RL')},
+        "tire":             {"type": str},
         "diameter":         {"type": int}
     }))},
-    "options":              {"type": Array(basestring)}
+    "options":              {"type": Array(str)}
 })
 
 
@@ -77,9 +78,9 @@ class TestModel(TestCase):
         self.Car.remove_all_handlers()
 
     def assert_predicates(self, model, is_new=False, is_persisted=False, is_deleted=False):
-        self.assertEquals(is_new, model.is_new())
-        self.assertEquals(is_persisted, model.is_persisted())
-        self.assertEquals(is_deleted, model.is_deleted())
+        self.assertEqual(is_new, model.is_new())
+        self.assertEqual(is_persisted, model.is_persisted())
+        self.assertEqual(is_deleted, model.is_deleted())
 
     def test_class_module_is_that_of_caller(self):
         self.assertEqual(self.Car.__module__, 'tests.mongothon.model_test')
@@ -93,23 +94,23 @@ class TestModel(TestCase):
         mock_collection = Mock()
         mock_collection.name = "some_model"
         SomeModel = create_model(Schema({}), mock_collection)
-        self.assertEquals("SomeModel", SomeModel.__name__)
+        self.assertEqual("SomeModel", SomeModel.__name__)
 
     def test_class_name_can_be_overridden(self):
         mock_collection = Mock()
         mock_collection.name = "some_model"
         SomeModel = create_model(Schema({}), mock_collection, "SomethingElse")
-        self.assertEquals("SomethingElse", SomeModel.__name__)
+        self.assertEqual("SomethingElse", SomeModel.__name__)
 
     def test_can_be_treated_as_a_dict(self):
         self.assertIsInstance(self.car, dict)
         self.car['make'] = 'volvo'
-        self.assertEquals('volvo', self.car['make'])
+        self.assertEqual('volvo', self.car['make'])
 
     def test_can_be_treated_as_a_document(self):
         self.assertIsInstance(self.car, Document)
         self.car['make'] = 'volvo'
-        self.assertEquals('volvo', self.car['make'])
+        self.assertEqual('volvo', self.car['make'])
 
     def test_instantiate(self):
         self.assert_predicates(self.car, is_new=True)
@@ -130,7 +131,7 @@ class TestModel(TestCase):
     def test_apply_defaults(self):
         del self.car['trim']['doors']
         self.car.apply_defaults()
-        self.assertEquals(4, self.car['trim']['doors'])
+        self.assertEqual(4, self.car['trim']['doors'])
 
     def test_save_applies_defaults(self):
         del self.car['trim']['doors']
@@ -198,12 +199,12 @@ class TestModel(TestCase):
 
     def test_count(self):
         self.mock_collection.count.return_value = 45
-        self.assertEquals(45, self.Car.count())
+        self.assertEqual(45, self.Car.count())
 
     def test_find_one(self):
         self.mock_collection.find_one.return_value = doc
         loaded_car = self.Car.find_one({'make': 'Peugeot'})
-        self.assertEquals(doc, loaded_car)
+        self.assertEqual(doc, loaded_car)
         self.assert_predicates(loaded_car, is_persisted=True)
         self.mock_collection.find_one.assert_called_with({'make': 'Peugeot'})
 
@@ -228,24 +229,24 @@ class TestModel(TestCase):
         cars = self.Car.find({'make': 'Peugeot'}, limit=2)
         iter1 = cars.__iter__()
         iter2 = cars.__iter__()
-        self.assertIsInstance(iter1.next(), self.Car)
-        self.assertIsInstance(iter2.next(), self.Car)
-        self.assertIsInstance(iter1.next(), self.Car)
-        self.assertIsInstance(iter2.next(), self.Car)
+        self.assertIsInstance(next(iter1), self.Car)
+        self.assertIsInstance(next(iter2), self.Car)
+        self.assertIsInstance(next(iter1), self.Car)
+        self.assertIsInstance(next(iter2), self.Car)
 
 
     def test_find_by_id(self):
         self.mock_collection.find_one.return_value = doc
         oid = ObjectId()
         loaded_car = self.Car.find_by_id(oid)
-        self.assertEquals(doc, loaded_car)
+        self.assertEqual(doc, loaded_car)
         self.assert_predicates(loaded_car, is_persisted=True)
         self.mock_collection.find_one.assert_called_with({'_id': oid})
 
     def test_find_by_id_handles_integer_id(self):
         self.mock_collection.find_one.return_value = doc
         loaded_car = self.Car.find_by_id(33)
-        self.assertEquals(doc, loaded_car)
+        self.assertEqual(doc, loaded_car)
         self.assert_predicates(loaded_car, is_persisted=True)
         self.mock_collection.find_one.assert_called_with({'_id': 33})
 
@@ -253,7 +254,7 @@ class TestModel(TestCase):
         self.mock_collection.find_one.return_value = doc
         oid = ObjectId()
         loaded_car = self.Car.find_by_id(str(oid))
-        self.assertEquals(doc, loaded_car)
+        self.assertEqual(doc, loaded_car)
         self.assert_predicates(loaded_car, is_persisted=True)
         self.mock_collection.find_one.assert_called_with({'_id': oid})
 
@@ -267,7 +268,7 @@ class TestModel(TestCase):
     def test_find_by_id_handles_non_oid_string_id(self):
         self.mock_collection.find_one.return_value = doc
         loaded_car = self.Car.find_by_id("bob")
-        self.assertEquals(doc, loaded_car)
+        self.assertEqual(doc, loaded_car)
         self.assert_predicates(loaded_car, is_persisted=True)
         self.mock_collection.find_one.assert_called_with({'_id': "bob"})
 
@@ -279,7 +280,7 @@ class TestModel(TestCase):
         car = self.Car.find_by_id(str(oid))
         car['_id'] = oid
         car.reload()
-        self.assertEquals(updated_doc, car)
+        self.assertEqual(updated_doc, car)
         self.mock_collection.find_one.assert_has_calls([
             call({'_id': oid}), call({'_id': oid})])
 
@@ -326,7 +327,7 @@ class TestModel(TestCase):
         """Groups together mocks for the purpose of tracking the
         order of calls across all of those mocks."""
         tracker = Mock()
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             setattr(tracker, key, value)
         return tracker
 
@@ -335,14 +336,14 @@ class TestModel(TestCase):
         tracker = self.call_tracker(handler=handler, collection=self.mock_collection)
         self.Car.on('will_save', handler)
         self.car.save()
-        self.assertEquals([call.handler(self.car), call.collection.save(self.car)], tracker.mock_calls)
+        self.assertEqual([call.handler(self.car), call.collection.save(self.car)], tracker.mock_calls)
 
     def test_did_save_event(self):
         handler = Mock()
         tracker = self.call_tracker(handler=handler, collection=self.mock_collection)
         self.Car.on('did_save', handler)
         self.car.save()
-        self.assertEquals([call.collection.save(self.car), call.handler(self.car)], tracker.mock_calls)
+        self.assertEqual([call.collection.save(self.car), call.handler(self.car)], tracker.mock_calls)
 
     def test_changes_available_to_did_save_event_handler(self):
         inner = Mock()
@@ -350,7 +351,7 @@ class TestModel(TestCase):
             self.assertTrue(car.changed)
             self.assertEqual({'ac': True}, car['trim'].changed)
             self.assertEqual({}, car['trim'].added)
-            self.assertEquals({'diameter': (22, 23)}, car['wheels'][0].changes)
+            self.assertEqual({'diameter': (22, 23)}, car['wheels'][0].changes)
             inner()
 
         self.Car.on('did_save', handler)
@@ -366,7 +367,7 @@ class TestModel(TestCase):
             self.assertTrue(car.changed)
             self.assertIn('ac', car['trim'].changed)
             self.assertEqual({}, car['trim'].added)
-            self.assertEquals({'diameter': (22, 23)}, car['wheels'][0].changes)
+            self.assertEqual({'diameter': (22, 23)}, car['wheels'][0].changes)
             self.assertIsInstance(car, self.Car)
             inner()
 
@@ -383,7 +384,7 @@ class TestModel(TestCase):
         tracker = self.call_tracker(handler=handler, validate=car_schema.validate)
         self.Car.on('will_validate', handler)
         self.car.validate()
-        self.assertEquals([call.handler(self.car), call.validate(self.car)], tracker.mock_calls)
+        self.assertEqual([call.handler(self.car), call.validate(self.car)], tracker.mock_calls)
 
     def test_did_validate_event(self):
         handler = Mock()
@@ -391,7 +392,7 @@ class TestModel(TestCase):
         tracker = self.call_tracker(handler=handler, validate=car_schema.validate)
         self.Car.on('did_validate', handler)
         self.car.validate()
-        self.assertEquals([call.validate(self.car), call.handler(self.car)], tracker.mock_calls)
+        self.assertEqual([call.validate(self.car), call.handler(self.car)], tracker.mock_calls)
 
     def test_did_init_event(self):
         handler = Mock()
@@ -490,7 +491,7 @@ class TestModel(TestCase):
             pass
 
         outer_decorator.assert_called_once_with(ANY)
-        self.assertTrue(callable(outer_decorator.call_args[0][0]))
+        self.assertTrue(isinstance(outer_decorator.call_args[0][0], collections.Callable))
 
     def test_emit_custom_event(self):
         handler = Mock()
@@ -503,34 +504,34 @@ class TestModel(TestCase):
         self.Car.on('did_init', handler)
         self.Car.remove_handler('did_init', handler)
         self.Car()
-        self.assertEquals(0, handler.call_count)
+        self.assertEqual(0, handler.call_count)
 
     def test_remove_all_handlers(self):
         handler = Mock()
         self.Car.on('did_init', handler)
         self.Car.remove_all_handlers()
         self.Car()
-        self.assertEquals(0, handler.call_count)
+        self.assertEqual(0, handler.call_count)
 
     def test_handlers(self):
         handler = Mock()
         self.Car.on('did_init', handler)
-        self.assertEquals([handler], self.Car.handlers('did_init'))
+        self.assertEqual([handler], self.Car.handlers('did_init'))
 
     def test_different_classes_managed_their_own_handlers(self):
         CarA = create_model(car_schema, Mock())
         CarB = create_model(car_schema, Mock())
         handler = Mock()
         CarA.on('did_save', handler)
-        self.assertEquals([], CarB.handlers('did_save'))
+        self.assertEqual([], CarB.handlers('did_save'))
 
     def test_static_method_registration(self):
         @self.Car.static_method
         def format_make(make):
-            self.assertEquals("mercedez-benz", make)
+            self.assertEqual("mercedez-benz", make)
             return make.title()
 
-        self.assertEquals("Mercedez-Benz", self.Car.format_make("mercedez-benz"))
+        self.assertEqual("Mercedez-Benz", self.Car.format_make("mercedez-benz"))
 
     def test_static_method_registration_with_other_decorators(self):
         outer_decorator = Mock()
@@ -541,18 +542,18 @@ class TestModel(TestCase):
             pass
 
         outer_decorator.assert_called_once_with(ANY)
-        self.assertTrue(callable(outer_decorator.call_args[0][0]))
+        self.assertTrue(isinstance(outer_decorator.call_args[0][0], collections.Callable))
 
     def test_class_method_registration(self):
         response = Mock()
 
         @self.Car.class_method
         def find_by_make(Car, make):
-            self.assertEquals(Car, self.Car)
-            self.assertEquals("Peugeot", make)
+            self.assertEqual(Car, self.Car)
+            self.assertEqual("Peugeot", make)
             return response
 
-        self.assertEquals(response, self.Car.find_by_make("Peugeot"))
+        self.assertEqual(response, self.Car.find_by_make("Peugeot"))
 
     def test_class_method_registration_with_other_decorators(self):
         outer_decorator = Mock()
@@ -563,7 +564,7 @@ class TestModel(TestCase):
             pass
 
         outer_decorator.assert_called_once_with(ANY)
-        self.assertTrue(callable(outer_decorator.call_args[0][0]))
+        self.assertTrue(isinstance(outer_decorator.call_args[0][0], collections.Callable))
 
     def test_instance_method_registration(self):
         response = Mock()
@@ -571,11 +572,11 @@ class TestModel(TestCase):
         @self.Car.instance_method
         def add_option(car, option):
             self.assertIsInstance(car, self.Car)
-            self.assertEquals(option, "sunroof")
+            self.assertEqual(option, "sunroof")
             return response
 
         car = self.Car(doc)
-        self.assertEquals(response, car.add_option("sunroof"))
+        self.assertEqual(response, car.add_option("sunroof"))
 
     def test_instance_method_registration_with_other_decorators(self):
         outer_decorator = Mock()
@@ -586,7 +587,7 @@ class TestModel(TestCase):
             pass
 
         outer_decorator.assert_called_once_with(ANY)
-        self.assertTrue(callable(outer_decorator.call_args[0][0]))
+        self.assertTrue(isinstance(outer_decorator.call_args[0][0], collections.Callable))
 
 
     def test_scope_query(self):
@@ -619,7 +620,7 @@ class TestModel(TestCase):
             return {"trim.ac": available}
 
         outer_decorator.assert_called_once_with(ANY)
-        self.assertTrue(callable(outer_decorator.call_args[0][0]))
+        self.assertTrue(isinstance(outer_decorator.call_args[0][0], collections.Callable))
 
     def test_models_maintain_their_own_scope_lists(self):
         CarA = create_model(car_schema, Mock())
@@ -633,13 +634,13 @@ class TestModel(TestCase):
 
         CarA.scope(scope_a)
         CarB.scope(scope_b)
-        self.assertEquals(STANDARD_SCOPES + [scope_a], CarA.scopes)
-        self.assertEquals(STANDARD_SCOPES + [scope_b], CarB.scopes)
+        self.assertEqual(STANDARD_SCOPES + [scope_a], CarA.scopes)
+        self.assertEqual(STANDARD_SCOPES + [scope_b], CarB.scopes)
 
     def test_find_one_from_offline_model(self):
         self.mock_collection.find_one.return_value = doc
         loaded_car = self.CarOffline.find_one({'make': 'Peugeot'})
-        self.assertEquals(doc, loaded_car)
+        self.assertEqual(doc, loaded_car)
         self.assert_predicates(loaded_car, is_persisted=True)
         self.mock_collection.find_one.assert_called_with({'make': 'Peugeot'})
 

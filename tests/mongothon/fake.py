@@ -21,7 +21,7 @@ class FakeCursor(object):
     def __iter__(self):
         return FakeCursor(self._contents)
 
-    def next(self):
+    def __next__(self):
         if self._next >= len(self._contents):
             raise StopIteration
 

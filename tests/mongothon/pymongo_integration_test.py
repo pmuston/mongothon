@@ -2,7 +2,7 @@ import os
 from pymongo.connection import Connection
 import unittest
 from mongothon import create_model
-from sample import blog_post_schema, valid_doc, expected_db_doc
+from .sample import blog_post_schema, valid_doc, expected_db_doc
 from contextlib import contextmanager
 
 host = os.environ.get("DB_IP", "localhost")
@@ -79,7 +79,7 @@ class TestPyMongoIntegration(unittest.TestCase):
         # Reload to check the change is there
         reloaded_blog_post = BlogPost.find_by_id(blog_post['_id'])
         expected = expected_db_doc(blog_post['_id'])
-        expected['author']['first'] = u"Troy"
+        expected['author']['first'] = "Troy"
         self.assertDictEqual(
             expected, reloaded_blog_post)
 
@@ -87,7 +87,7 @@ class TestPyMongoIntegration(unittest.TestCase):
         for i in range(5):
             BlogPost(valid_doc()).save()
         posts = BlogPost.find()
-        self.assertEquals(posts.count(), 5)
+        self.assertEqual(posts.count(), 5)
         post = posts[0]
         del post['author']
         try:
@@ -99,7 +99,7 @@ class TestPyMongoIntegration(unittest.TestCase):
         for i in range(10):
             BlogPost(valid_doc({"likes": i})).save()
         posts = BlogPost.find({"likes": {"$gte": 5}})
-        self.assertEquals(5, posts.count())
+        self.assertEqual(5, posts.count())
 
     def test_update(self):
         other = BlogPost(valid_doc())

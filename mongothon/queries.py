@@ -2,7 +2,7 @@ from copy import deepcopy
 
 def deep_merge(source, dest):
     """Deep merges source dict into dest dict."""
-    for key, value in source.iteritems():
+    for key, value in source.items():
         if key in dest:
             if isinstance(value, dict) and isinstance(dest[key], dict):
                 deep_merge(value, dest[key])

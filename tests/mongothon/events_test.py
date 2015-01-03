@@ -26,7 +26,7 @@ class TestEventHandlerRegistrar(unittest.TestCase):
         self.registrar.register('remove', remove_handler)
         self.registrar.apply('save', document, arg, kwarg=kwarg)
         save_handler.assert_called_once_with(document, arg, kwarg=kwarg)
-        self.assertEquals(0, remove_handler.call_count)
+        self.assertEqual(0, remove_handler.call_count)
 
     def test_applies_all_registered_handlers_in_order(self):
         def get_handler(num):
@@ -40,7 +40,7 @@ class TestEventHandlerRegistrar(unittest.TestCase):
         self.registrar.register('save', get_handler(3))
         document = {'invoked': []}
         self.registrar.apply('save', document)
-        self.assertEquals([1, 2, 3], document['invoked'])
+        self.assertEqual([1, 2, 3], document['invoked'])
 
     def test_handles_events_with_no_registered_handler(self):
         self.registrar.apply('save', {})
@@ -61,7 +61,7 @@ class TestEventHandlerRegistrar(unittest.TestCase):
         self.registrar.register('save', handler)
         self.registrar.deregister('save', handler)
         self.registrar.apply('save', document, arg, kwarg=kwarg)
-        self.assertEquals(0, handler.call_count)
+        self.assertEqual(0, handler.call_count)
 
     def test_deregister_when_not_registered(self):
         handler = Mock()
@@ -79,8 +79,8 @@ class TestEventHandlerRegistrar(unittest.TestCase):
         self.registrar.register('save', handler2)
         self.registrar.deregister_all()
         self.registrar.apply('save', document, arg, kwarg=kwarg)
-        self.assertEquals(0, handler1.call_count)
-        self.assertEquals(0, handler2.call_count)
+        self.assertEqual(0, handler1.call_count)
+        self.assertEqual(0, handler2.call_count)
 
     def test_deregister_all_with_event_type(self):
         handler1, handler2 = Mock(), Mock()
@@ -91,16 +91,16 @@ class TestEventHandlerRegistrar(unittest.TestCase):
         self.registrar.register('save', handler2)
         self.registrar.deregister_all('reload')
         self.registrar.apply('save', document, arg, kwarg=kwarg)
-        self.assertEquals(1, handler1.call_count)
-        self.assertEquals(1, handler2.call_count)
+        self.assertEqual(1, handler1.call_count)
+        self.assertEqual(1, handler2.call_count)
         self.registrar.deregister_all('other', 'save')
-        self.assertEquals(1, handler1.call_count)
-        self.assertEquals(1, handler2.call_count)
+        self.assertEqual(1, handler1.call_count)
+        self.assertEqual(1, handler2.call_count)
 
     def test_handlers(self):
         handler1, handler2 = Mock(), Mock()
         self.registrar.register('save', handler1)
         self.registrar.register('save', handler2)
-        self.assertEquals([handler1, handler2], self.registrar.handlers('save'))
-        self.assertEquals([], self.registrar.handlers('other'))
+        self.assertEqual([handler1, handler2], self.registrar.handlers('save'))
+        self.assertEqual([], self.registrar.handlers('other'))
 

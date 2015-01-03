@@ -29,7 +29,7 @@ class ModelMeta(type):
         return super(ModelMeta, self).__getattribute__(name)
 
 
-class Model(Document):
+class Model(Document, metaclass=ModelMeta):
     """
     Model base class on which all specific user model classes subclass.
 
@@ -39,8 +39,6 @@ class Model(Document):
     subclass is correctly constructed with the appropriate collection
     and schema dependencies.
     """
-
-    __metaclass__ = ModelMeta
 
     # Valid lifecycle states which a given Model instance may occupy.
     NEW = 1
@@ -71,7 +69,7 @@ class Model(Document):
         if isinstance(id, ObjectId):
             return id
 
-        if isinstance(id, basestring) and OBJECTIDEXPR.match(id):
+        if isinstance(id, str) and OBJECTIDEXPR.match(id):
             return ObjectId(id)
 
         return id
@@ -338,5 +336,5 @@ class IteratorWrapper(object):
         self._wrapped = wrapped_iterator
         self._model_class = model_class
 
-    def next(self):
-        return self._model_class(self._wrapped.next(), initial_state=Model.PERSISTED)
+    def __next__(self):
+        return self._model_class(next(self._wrapped), initial_state=Model.PERSISTED)
